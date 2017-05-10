@@ -1,0 +1,153 @@
+README file for SpectraMatch software distribution
+
+ABOUT
+Software SpectraMatch implements optimal algorithms for peptide searching library and
+stitching peptides. Precise stitching allows for correct protein
+. 
+
+The software runs on linux based systems.
+
+"""
+# ==========================================================================================================================================================
+
+           S T A R T   R E A D M E 
+
+# ==========================================================================================================================================================
+"""
+# ==========================================================================================================================================================
+1. Compilation
+
+$ make
+
+# ==========================================================================================================================================================
+2. Running
+=======================================
+SpectraMatch & PreprocessAndAnalysis.py
+Wenqiang Liu
+Last Modified : 2017/3/15
+=======================================
+# ==========================================================================================================================================================
+--help(SpectraMatch)
+./SpectraMatch
+
+Program: SpectraMatch (Tools for scores in the peptide searching library)
+Version: 1.1.1 
+
+Usage:   SpectraMatch <command> [options]
+Commands:
+  --Filtering
+	thrs  	using one-cut threshold to filter the spectra noise
+	sect  	select one section to filter the spectra noise
+	chrg  	base on the charge state to filter the spectra noise
+	five     	base on the five dot to filter the spectra noise
+
+  --SpectraScore
+	sortlib  	convert the library pathname to sorted mass ion table list
+	score  		using the filtered spectra do the SpectraMatch process
+# ==========================================================================================================================================================
+--help(SpectraMatch thrs)
+
+./SpectraMatch thrs
+
+Usage: SpectraMatch thrs [options] in.txt
+Input options:
+  --in-file-list 	the set of spectra with noise, input the spectra path-name list
+
+Output options:
+  --out-file-list	the set of spectra filtered, mean no noise spectra, output the spectra path-name list
+
+ParameterSet:
+  --num-of-proc  	the number of input-spectra to be processed
+
+and so on ...
+# ==========================================================================================================================================================
+--help(PreprocessAndAnalysis.py)
+# ==========================================================================================================================================================
+python PreprocessAndAnalysis.py -h
+# ==========================================================================================================================================================
+Program: PreprocessAndAnalysis.py (Tools for preprocess and analusis in the peptide searching library)
+Version: 1.1.1 
+
+Usage:   python PreprocessAndAnalysis.py <command> [options]
+Commands options:
+    conv
+		-raw	  the raw file of lots of spectra in mgf file
+		-out      the base folder name for contain more single spectra from mgf file
+		-method   CutThreshold,ChargeSelect,ZoneSelect,default All
+	sort
+		-in       the scoring file from software SpectraMatch
+		-out      the selected scoring file by sorting
+		-nl       the all peptide name from scoring file
+		-fd       the folder to contain every peptide searching result
+		-pep      the peptide name to be stitched of selected scoring file by sorting 
+		-thres    select scoring file thres,default(5)
+	pep_pro
+		-fasta    the reference fasta for stitching peptides
+		-peptide  the peptides name list to be stitched
+		-peppro   the peptides list refering protein
+	create
+		-csv      the mascot result which contains bing.csv file
+        -filter   the high quality new library refering which filtered folder
+		-thres    set which threshold defines high quality
+    
+# ==========================================================================================================================================================
+3. pipeline
+# ==========================================================================================================================================================
+Preprocess raw mgf file :
+Tool : PreprocessAndAnalysis.py
+Command : python2.7 PreprocessAndAnalysis.py conv -raw Site1_Cell_line_ERneg_HER2neg_Pool1_1D_Rep1.mgf -out Site1_Cell_line_ERneg_HER2neg_Pool_Testing
+Results :
+Set of single spectra(No filtering) : Site1_Cell_line_ERneg_HER2neg_Pool_Testing/*
+Path-name list : Site1_Cell_line_ERneg_HER2neg_Pool_Testing.txt
+Set of single spectra(CutThreshold) : Site1_Cell_line_ERneg_HER2neg_Pool_Testing_CutThreshold/None
+Path-name list : Site1_Cell_line_ERneg_HER2neg_Pool_Testing_CutThreshold.txt
+Set of single spectra(ChargeSelect) : Site1_Cell_line_ERneg_HER2neg_Pool_Testing_ChargeSelect/None
+Path-name list : Site1_Cell_line_ERneg_HER2neg_Pool_Testing_ChargeSelect.txt
+Set of single spectra(ZoneSelect) : Site1_Cell_line_ERneg_HER2neg_Pool_Testing_ZoneSelect/None
+Path-name list : Site1_Cell_line_ERneg_HER2neg_Pool_Testing_ZoneSelect.txt
+Set of single spectra(FiveSelect) : Site1_Cell_line_ERneg_HER2neg_Pool_Testing_FiveSelect/None
+Path-name list : Site1_Cell_line_ERneg_HER2neg_Pool_Testing_FiveSelect.txt
+# ==========================================================================================================================================================
+Filter the noise and SpectraMatch score
+Tool : SpectraMatch
+Filter-Command : ./SpectraMatch thrs --in-file-list Site1_Cell_line_ERneg_HER2neg_Pool_Testing.txt --out-file-list Site1_Cell_line_ERneg_HER2neg_Pool_Testing_CutThreshold.txt --num-of-proc 44645
+./SpectraMatch sect --in-file-list Site1_Cell_line_ERneg_HER2neg_Pool_Testing.txt --out-file-list Site1_Cell_line_ERneg_HER2neg_Pool_Testing_ZoneSelect.txt --num-of-proc 44645
+./SpectraMatch chrg --in-file-list Site1_Cell_line_ERneg_HER2neg_Pool_Testing.txt --out-file-list Site1_Cell_line_ERneg_HER2neg_Pool_Testing_ChargeSelect.txt --num-of-proc 44645
+./SpectraMatch five --in-file-list Site1_Cell_line_ERneg_HER2neg_Pool_Testing.txt --out-file-list Site1_Cell_line_ERneg_HER2neg_Pool_Testing_FiveSelect.txt --num-of-proc 44645
+Results : 
+Site1_Cell_line_ERneg_HER2neg_Pool_Testing_CutThreshold/*
+Site1_Cell_line_ERneg_HER2neg_Pool_Testing_ChargeSelect/*
+Site1_Cell_line_ERneg_HER2neg_Pool_Testing_ZoneSelect/*
+Site1_Cell_line_ERneg_HER2neg_Pool_Testing_FiveSelect/*
+# ==========================================================================================================================================================
+Sortlib-Command
+./SpectraMatch sortlib --lib library.txt --out sort_lib_mw.txt
+Result : 
+sort_lib_mw.txt
+# ==========================================================================================================================================================
+Score-Command
+./SpectraMatch score --lib-for-ser library.txt --sam-for-sco Site1_Cell_line_ERneg_HER2neg_Pool_Testing_ChargeSelect.txt --num-of-proc 44645 --out-shape thread
+Result : 
+thread_Out/*threadtest[1-20]_output.txt thread--20
+threadtest_merge_output.txt
+# ==========================================================================================================================================================
+Candidated peptide list and concat
+Tool : PreprocessAndAnalysis.py
+Command : python2.7 PreprocessAndAnalysis.py sort -in ./output_test.txt -out ./output_test_sort.txt -nl ./output_test_pep_name.txt -fd ./Output_test -pep ./output_test_pepname.txt
+Results : 
+Output_test/*
+output_test_sort.txt
+output_test_pep_name.txt
+output_test_pepname.txt
+# ==========================================================================================================================================================
+Concat
+Command : python2.7 PreprocessAndAnalysis_concat.py pep_pro -fasta uniprot-all_reviewed.fasta -peptide output_test_peptide_name.txt -peppro pep_pro.txt
+results:
+pep_pro.txt
+pep_qc_proteinAll.txt
+# ==========================================================================================================================================================
+Create new library
+Command : python2.7 PreprocessAndAnalysis_thres.py create -csv bing-1.csv -filter Site1_Cell_line_ERneg_HER2neg_Pool_Testing_ChargeSelect -thres 30
+# ==========================================================================================================================================================
+Please send your comments and suggestions to 15827431349@163.com.
+# ==========================================================================================================================================================
